@@ -20,76 +20,35 @@ public class Main {
         long startTs = System.currentTimeMillis(); // start time
         List<Thread> threads = new ArrayList<>();
 
-        Thread thread = new Thread(() -> { //10_000 текстов --- 1ый поток
+//10_000 текстов --- 1ый поток
+        Thread thread = new Thread(() -> {
             String text;
             for (int i = 0; i < TEXTS10_000; i++) {
                 text = generateText("abc", LENGTHTEXT);
                 //System.out.println(text);
 
-                synchronized (dropA) {
-                    while (dropA.size() == QUEUE100) {
-                        try {
-                            dropA.wait();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    if (dropA.isEmpty()) {
-                        dropA.notifyAll();
-                    }
-                    dropA.add(text);
+                try {
+                    dropA.put(text);
+                    dropB.put(text);
+                    dropC.put(text);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-                synchronized (dropB) {
-                    while (dropB.size() == QUEUE100) {
-                        try {
-                            dropB.wait();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    if (dropB.isEmpty()) {
-                        dropB.notifyAll();
-                    }
-                    dropB.add(text);
-                }
-                synchronized (dropC) {
-                    while (dropC.size() == QUEUE100) {
-                        try {
-                            dropC.wait();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    if (dropC.isEmpty()) {
-                        dropC.notifyAll();
-                    }
-                    dropC.add(text);
-                }
+
             }
         });
         threads.add(thread);
         thread.start();
 
-        thread = new Thread(() -> { //текст, в котором содержится максимальное количество символов 'a'
+//текст, в котором содержится максимальное количество символов 'a'
+        thread = new Thread(() -> {
             char ch = 'a';
             String str;
             for (int i = 0; i < TEXTS10_000; i++) {
-                synchronized (dropA) {
-                    if (dropA.isEmpty()) {
-                        try {
-                            dropA.wait();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    if (dropA.size() == QUEUE100) {
-                        dropA.notifyAll();
-                    }
-                    try {
-                        str = dropA.take();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                try {
+                    str = dropA.take();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
                 int count = str.length() - str.replace(String.valueOf(ch), "").length();
                 if (maxCountA < count) {
@@ -100,26 +59,15 @@ public class Main {
         threads.add(thread);
         thread.start();
 
-        thread = new Thread(() -> { //текст, в котором содержится максимальное количество символов 'b'
+//текст, в котором содержится максимальное количество символов 'b'
+        thread = new Thread(() -> {
             char ch = 'b';
             String str;
             for (int i = 0; i < TEXTS10_000; i++) {
-                synchronized (dropB) {
-                    if (dropB.isEmpty()) {
-                        try {
-                            dropB.wait();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    if (dropB.size() == QUEUE100) {
-                        dropB.notifyAll();
-                    }
-                    try {
-                        str = dropB.take();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                try {
+                    str = dropB.take();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
                 int count = str.length() - str.replace(String.valueOf(ch), "").length();
                 if (maxCountB < count) {
@@ -130,26 +78,15 @@ public class Main {
         threads.add(thread);
         thread.start();
 
-        thread = new Thread(() -> { //текст, в котором содержится максимальное количество символов 'c'
+//текст, в котором содержится максимальное количество символов 'c'
+        thread = new Thread(() -> {
             char ch = 'c';
             String str;
             for (int i = 0; i < TEXTS10_000; i++) {
-                synchronized (dropC) {
-                    if (dropC.isEmpty()) {
-                        try {
-                            dropC.wait();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    if (dropC.size() == QUEUE100) {
-                        dropC.notifyAll();
-                    }
-                    try {
-                        str = dropC.take();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                try {
+                    str = dropC.take();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
                 int count = str.length() - str.replace(String.valueOf(ch), "").length();
                 if (maxCountC < count) {
@@ -185,4 +122,4 @@ public class Main {
         return text.toString();
     }
 }
-/// Time: 5 370 ms
+/// Time: 5 315 ms
